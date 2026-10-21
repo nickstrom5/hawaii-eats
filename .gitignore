@@ -30,3 +30,4 @@ playbook/app-store/ipad/
 xcuserdata/
 *.pyc
 LOCAL.md
+*.log

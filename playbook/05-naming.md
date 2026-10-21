@@ -34,3 +34,12 @@ All three pass state-prompts/icon-style/check.swift and read at 60 px (strip60):
 - Palette: **ocean & hibiscus**: ocean #0A4D68, hibiscus #C8102E, sand #FFF6E5, lava #1E1E1E, pineapple #FFC845 fill only.
 - Poke guide: stand-alone poke counters and fish markets (Tamashiro, Ono Seafood) count; supermarket counters (Foodland, Safeway,
   Times) don't.
+
+## USPTO check (2026-10-21, tmsearch.uspto.gov, by hand in the browser; search "hawaii eats", 3,427 results)
+- No mark for HAWAII EATS (or HAWAIʻI EATS) on its own.
+- Closest: **HAWAII EATS & TREATS HELLO HILO**, serial 97728220, LIVE / PENDING, King's Hawaiian Holding Company, Inc., classes 035 and
+  043 (online ordering for restaurant take-out; restaurant services). A different, longer phrase in restaurant-service classes; the app
+  is class 009/042 software. Worth Nick's judgment (not legal advice); it doesn't block the App Store name.
+- EATS, serial 98881115, LIVE / REGISTERED, Eats, LLC (Utah), classes 030, 035, 043 (vegan baked goods): the generic word, as for the
+  other "<State> Eats" names.
+- Many dead HAWAII and EATS marks; nothing live for HAWAII alone in app or restaurant classes in the first results.
