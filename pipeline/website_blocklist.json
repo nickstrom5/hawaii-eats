@@ -1,0 +1,11 @@
+[
+ {
+  "domain": "singleplatform.com",
+  "match": "domain",
+  "place": "Daiichi Ramen (Kailua-Kona), Village Snack Shop & Bakery (Hanalei)",
+  "reason": "directory: SinglePlatform menu listing pages (places.singleplatform.com, ?ref=google), not the place's own site",
+  "severity": "P2",
+  "evidence": "docs/data/detail.json, site QA 2026-10-21",
+  "found": "2026-10-21"
+ }
+]

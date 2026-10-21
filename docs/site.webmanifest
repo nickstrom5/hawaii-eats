@@ -1,0 +1,26 @@
+{
+  "name": "Hawai\u02bbi Eats",
+  "short_name": "Hawai\u02bbi Eats",
+  "description": "Plate lunch, poke & shave ice guide, plus 3,898 Hawaii restaurants.",
+  "start_url": "/hawaii-eats/",
+  "display": "browser",
+  "background_color": "#f8f4ec",
+  "theme_color": "#4b2a5c",
+  "icons": [
+    {
+      "src": "/hawaii-eats/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/hawaii-eats/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/hawaii-eats/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

@@ -1,0 +1,355 @@
+{
+ "generated": "2026-10-21",
+ "domain": "https://nickstrom5.github.io/hawaii-eats",
+ "restaurants": 3898,
+ "towns": 79,
+ "counties": 4,
+ "hand_checked": 65,
+ "picks": 60,
+ "guides": {
+  "plate": {
+   "places": 19,
+   "page": true
+  },
+  "poke": {
+   "places": 13,
+   "page": true
+  },
+  "saimin": {
+   "places": 7,
+   "page": true
+  },
+  "shaveice": {
+   "places": 5,
+   "page": true
+  },
+  "malasadas": {
+   "places": 12,
+   "page": true
+  },
+  "hawaiian": {
+   "places": 10,
+   "page": true
+  },
+  "musubi": {
+   "places": 7,
+   "page": true
+  },
+  "locomoco": {
+   "places": 7,
+   "page": true
+  },
+  "lahaina": {
+   "places": 5,
+   "page": true
+  }
+ },
+ "james_beard": {
+  "places": 6,
+  "page": true,
+  "by_honor": {
+   "America's Classic": 3,
+   "James Beard winner": 3
+  }
+ },
+ "oldest": {
+  "places": 4,
+  "page": true
+ },
+ "place_pages": 65,
+ "abc_licenses": 0,
+ "cities": {
+  "Honolulu": {
+   "restaurants": 1484,
+   "listed": 23,
+   "picks": 20,
+   "james_beard": 4,
+   "sections": [
+    "plate-lunch",
+    "poke",
+    "saimin",
+    "malasadas",
+    "hawaiian-food",
+    "musubi",
+    "loco-moco",
+    "honors"
+   ],
+   "indexed": true
+  },
+  "Kailua-Kona": {
+   "restaurants": 189,
+   "listed": 4,
+   "picks": 2,
+   "james_beard": 1,
+   "sections": [
+    "plate-lunch",
+    "poke",
+    "loco-moco",
+    "honors",
+    "oldest"
+   ],
+   "indexed": false
+  },
+  "Hilo": {
+   "restaurants": 173,
+   "listed": 4,
+   "picks": 4,
+   "james_beard": 0,
+   "sections": [
+    "plate-lunch",
+    "saimin",
+    "malasadas",
+    "loco-moco"
+   ],
+   "indexed": false
+  },
+  "K\u012bhei": {
+   "restaurants": 152,
+   "listed": 1,
+   "picks": 1,
+   "james_beard": 0,
+   "sections": [
+    "plate-lunch",
+    "musubi"
+   ],
+   "indexed": false
+  },
+  "Kapolei": {
+   "restaurants": 134,
+   "listed": 0,
+   "picks": 0,
+   "james_beard": 0,
+   "sections": [],
+   "indexed": false
+  },
+  "\u02bbAiea": {
+   "restaurants": 123,
+   "listed": 1,
+   "picks": 1,
+   "james_beard": 0,
+   "sections": [
+    "saimin"
+   ],
+   "indexed": false
+  },
+  "Waipahu": {
+   "restaurants": 118,
+   "listed": 2,
+   "picks": 2,
+   "james_beard": 0,
+   "sections": [
+    "plate-lunch",
+    "poke",
+    "hawaiian-food"
+   ],
+   "indexed": false
+  },
+  "Kailua": {
+   "restaurants": 108,
+   "listed": 1,
+   "picks": 1,
+   "james_beard": 0,
+   "sections": [
+    "shave-ice"
+   ],
+   "indexed": false
+  },
+  "K\u0101ne\u02bbohe": {
+   "restaurants": 94,
+   "listed": 2,
+   "picks": 2,
+   "james_beard": 0,
+   "sections": [
+    "hawaiian-food"
+   ],
+   "indexed": false
+  },
+  "Kahului": {
+   "restaurants": 103,
+   "listed": 3,
+   "picks": 3,
+   "james_beard": 0,
+   "sections": [
+    "plate-lunch",
+    "malasadas",
+    "loco-moco",
+    "oldest"
+   ],
+   "indexed": false
+  },
+  "L\u012bhu\u02bbe": {
+   "restaurants": 97,
+   "listed": 4,
+   "picks": 4,
+   "james_beard": 1,
+   "sections": [
+    "plate-lunch",
+    "saimin",
+    "malasadas",
+    "honors",
+    "oldest"
+   ],
+   "indexed": false
+  },
+  "Kapa\u02bba": {
+   "restaurants": 83,
+   "listed": 3,
+   "picks": 3,
+   "james_beard": 0,
+   "sections": [
+    "plate-lunch",
+    "poke",
+    "shave-ice",
+    "hawaiian-food"
+   ],
+   "indexed": false
+  },
+  "Wailuku": {
+   "restaurants": 81,
+   "listed": 2,
+   "picks": 2,
+   "james_beard": 0,
+   "sections": [
+    "plate-lunch",
+    "saimin",
+    "loco-moco"
+   ],
+   "indexed": false
+  },
+  "Hale\u02bbiwa": {
+   "restaurants": 56,
+   "listed": 3,
+   "picks": 3,
+   "james_beard": 0,
+   "sections": [
+    "plate-lunch",
+    "poke",
+    "shave-ice",
+    "malasadas"
+   ],
+   "indexed": false
+  },
+  "Pearl City": {
+   "restaurants": 59,
+   "listed": 0,
+   "picks": 0,
+   "james_beard": 0,
+   "sections": [],
+   "indexed": false
+  },
+  "K\u0101\u02bbanapali": {
+   "restaurants": 51,
+   "listed": 5,
+   "picks": 5,
+   "james_beard": 0,
+   "sections": [
+    "plate-lunch",
+    "poke",
+    "malasadas",
+    "loco-moco",
+    "lahaina"
+   ],
+   "indexed": true
+  },
+  "Waimea (Hawai\u02bbi Island)": {
+   "restaurants": 54,
+   "listed": 1,
+   "picks": 1,
+   "james_beard": 0,
+   "sections": [
+    "plate-lunch",
+    "malasadas"
+   ],
+   "indexed": false
+  },
+  "K\u014dloa": {
+   "restaurants": 52,
+   "listed": 2,
+   "picks": 2,
+   "james_beard": 0,
+   "sections": [
+    "plate-lunch",
+    "poke",
+    "shave-ice",
+    "hawaiian-food"
+   ],
+   "indexed": false
+  },
+  "Mililani": {
+   "restaurants": 46,
+   "listed": 2,
+   "picks": 2,
+   "james_beard": 0,
+   "sections": [
+    "saimin",
+    "malasadas",
+    "musubi"
+   ],
+   "indexed": false
+  },
+  "Waikoloa": {
+   "restaurants": 40,
+   "listed": 1,
+   "picks": 1,
+   "james_beard": 0,
+   "sections": [
+    "shave-ice"
+   ],
+   "indexed": false
+  }
+ },
+ "regions": {
+  "oahu": {
+   "restaurants": 2444,
+   "listed": 34,
+   "picks": 31,
+   "indexed": true
+  },
+  "maui": {
+   "restaurants": 511,
+   "listed": 11,
+   "picks": 11,
+   "indexed": true
+  },
+  "hawaii-island": {
+   "restaurants": 591,
+   "listed": 10,
+   "picks": 8,
+   "indexed": true
+  },
+  "kauai": {
+   "restaurants": 334,
+   "listed": 9,
+   "picks": 9,
+   "indexed": true
+  },
+  "molokai-lanai": {
+   "restaurants": 18,
+   "listed": 1,
+   "picks": 1,
+   "indexed": false
+  }
+ },
+ "noindex_pages": [
+  "cities/kailua-kona.html",
+  "cities/hilo.html",
+  "cities/kihei.html",
+  "cities/kapolei.html",
+  "cities/aiea.html",
+  "cities/waipahu.html",
+  "cities/kailua.html",
+  "cities/kaneohe.html",
+  "cities/kahului.html",
+  "cities/lihue.html",
+  "cities/kapaa.html",
+  "cities/wailuku.html",
+  "cities/haleiwa.html",
+  "cities/pearl-city.html",
+  "cities/waimea-hawaii-island.html",
+  "cities/koloa.html",
+  "cities/mililani.html",
+  "cities/waikoloa.html",
+  "regions/molokai-lanai.html"
+ ],
+ "min_list": 4
+}
