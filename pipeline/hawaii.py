@@ -24,6 +24,7 @@ from brands import brand_of
 import official
 from listings_util import official_match, _close_words
 from official import street_key, street_nums
+import tracking_params   # outbound links lose their tracking tags (QA 2026-10-23, P1 #3)
 
 APP = os.environ.get("HI_APP") == "1"
 SITE = os.environ.get("HI_SITE") or (os.path.join(ROOT, "data", "app") if APP else os.path.join(ROOT, "site"))
@@ -1557,6 +1558,9 @@ if APP:
                  "per_county": _cal.get("per_county"), "reference_colorado_denver": _cal.get("reference_colorado_denver"),
                  "doh2011_found_in_listings": _cal.get("doh2011_found_in_listings")}
     assert "google" not in json.dumps(calib_app).lower()
+    # tracking tags (ref=google, utm_*, cn_channel …) off every outbound link; the store's own parameters stay (tracking_params.py)
+    tp_changes = tracking_params.scrub(places)
+    print("tracking tags stripped:", dict(tp_changes))
     out = {"v": 1, **meta_common, "cities": CITIES, "cuisines": CUIS, "brands": BRANDS, "count": len(places), "count_restaurants": int(len(nv)),
            "calibration": calib_app, "places": places}
     os.makedirs(SITE, exist_ok=True)
