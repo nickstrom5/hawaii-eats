@@ -147,7 +147,8 @@ final class HawaiiEatsTests: XCTestCase {
         XCTAssertEqual(ids("kane'ohe"), ["b"], "an apostrophe typed for the ʻokina")
         XCTAssertEqual(ids("lihue"), ["i"])
         XCTAssertEqual(ids("ali'i dr"), ["h"], "the street with an apostrophe for the ʻokina")
-        XCTAssertEqual(ids("poke"), ["b", "d"], "the guide's place, and a place named that way")
+        // both names say "Poke", so both are name matches and A to Z orders them: "Poke Shack Hilo" before "Windward Poke Counter"
+        XCTAssertEqual(ids("poke"), ["d", "b"], "the guide's place, and a place named that way")
         XCTAssertEqual(ids("hilo poke"), ["d"], "a town in the query narrows to it")
         XCTAssertEqual(ids("shoyu ahi"), ["b"], "a hand-checked dish is searchable")
         XCTAssertNil(Search.parse("shoyu ahi", towns: [:]).tag, "\u{201C}shoyu ahi\u{201D} is a dish, not a whole guide")
