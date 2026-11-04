@@ -1,7 +1,7 @@
 {
- "generated": "2026-10-21",
+ "generated": "2026-11-03",
  "domain": "https://nickstrom5.github.io/hawaii-eats",
- "restaurants": 3898,
+ "restaurants": 3887,
  "towns": 79,
  "counties": 4,
  "hand_checked": 65,
@@ -60,7 +60,7 @@
  "abc_licenses": 0,
  "cities": {
   "Honolulu": {
-   "restaurants": 1484,
+   "restaurants": 1479,
    "listed": 23,
    "picks": 20,
    "james_beard": 4,
@@ -77,7 +77,7 @@
    "indexed": true
   },
   "Kailua-Kona": {
-   "restaurants": 189,
+   "restaurants": 187,
    "listed": 4,
    "picks": 2,
    "james_beard": 1,
@@ -115,7 +115,7 @@
    "indexed": false
   },
   "Kapolei": {
-   "restaurants": 134,
+   "restaurants": 132,
    "listed": 0,
    "picks": 0,
    "james_beard": 0,
@@ -133,7 +133,7 @@
    "indexed": false
   },
   "Waipahu": {
-   "restaurants": 118,
+   "restaurants": 116,
    "listed": 2,
    "picks": 2,
    "james_beard": 0,
@@ -300,7 +300,7 @@
  },
  "regions": {
   "oahu": {
-   "restaurants": 2444,
+   "restaurants": 2435,
    "listed": 34,
    "picks": 31,
    "indexed": true
@@ -312,7 +312,7 @@
    "indexed": true
   },
   "hawaii-island": {
-   "restaurants": 591,
+   "restaurants": 589,
    "listed": 10,
    "picks": 8,
    "indexed": true
