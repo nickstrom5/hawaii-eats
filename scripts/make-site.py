@@ -1747,7 +1747,7 @@ body = f"""{nav}
       <div class="ex-guides" role="group" aria-label="Guides">{guide_buttons}</div>
       <div class="ex-row1">
         <label class="vh" for="ex-q">Search</label>
-        <input id="ex-q" type="search" placeholder="Name, town, island or dish" autocomplete="off" enterkeyhint="search" disabled>
+        <input id="ex-q" type="search" placeholder="Name, island or dish" autocomplete="off" enterkeyhint="search" disabled>
         <button type="button" id="ex-locate" class="ex-small" disabled>Near me</button>
       </div>
       <div class="ex-row2">
