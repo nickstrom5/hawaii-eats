@@ -2,7 +2,7 @@
 <html lang="en" data-base="/hawaii-eats">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'none'; style-src 'sha256-wUZZGBwN6mMYTPFNal8cFcxpIfXse8S59oKd66FBe0c='; img-src 'self' data:; connect-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'none'; style-src 'sha256-fCXkhyUgRp9qVf7t2Fo6XghZQqs/9lOpQepOFxeCVeE='; img-src 'self' data:; font-src 'self'; connect-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="color-scheme" content="light">
@@ -29,8 +29,11 @@
 <link rel="icon" href="/hawaii-eats/favicon.svg" type="image/svg+xml">
 <link rel="icon" type="image/png" sizes="32x32" href="/hawaii-eats/favicon-32.png">
 <link rel="apple-touch-icon" sizes="180x180" href="/hawaii-eats/apple-touch-icon.png">
+<link rel="preload" href="/hawaii-eats/fonts/fredoka-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="manifest" href="/hawaii-eats/site.webmanifest">
-<style>
+<style>  @font-face { font-family: "Fredoka"; src: url("/hawaii-eats/fonts/fredoka-latin-ext.woff2") format("woff2"); font-weight: 700; font-style: normal; font-display: swap; unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF; }
+  @font-face { font-family: "Fredoka"; src: url("/hawaii-eats/fonts/fredoka-latin.woff2") format("woff2"); font-weight: 700; font-style: normal; font-display: swap; unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+
   :root {
     /* Hawaii's palette (Nick, 2026-10-19). The old names stay so the rules read as in the other states: --huck is ocean #0A4D68
        (8.6:1 on the sand), --pine is hibiscus #C8102E (white on it 5.9:1), --russet is pineapple #FFC845, a fill under dark text only. */
@@ -40,7 +43,7 @@
     --land: #fffcf5; --mapbg: #d3e7ee; --county: rgba(10,77,104,.35); --dot: #0a4d68; --pin-pick: #ffc845; --pin-honor: #c8102e; --pin-edge: #1e1e1e;
     --radius: 16px;
     --text: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
-    --display: "Avenir Next Condensed", "HelveticaNeue-CondensedBold", "Arial Narrow", system-ui, sans-serif;
+    --display: "Avenir Next Condensed", "HelveticaNeue-CondensedBold", "Arial Narrow", system-ui, sans-serif; --head-font: "Fredoka", "Avenir Next Condensed", "HelveticaNeue-CondensedBold", "Arial Narrow", system-ui, sans-serif;
     color-scheme: light;
   }
   * { box-sizing: border-box; }
@@ -57,14 +60,14 @@
   header.site { display: flex; align-items: center; justify-content: space-between; gap: 6px 12px; padding: 12px 0 8px; }
   .ridge { display: block; width: 100%; height: 86px; background: var(--huck); border-radius: 12px; padding: 4px 0; }
   .ridge .land { fill: var(--bg); }
-  .logo { display: inline-flex; align-items: center; gap: 10px; min-height: 44px; font: 800 22px/1 var(--display); text-transform: uppercase; letter-spacing: .01em; color: var(--huck); text-decoration: none; }
+  .logo { display: inline-flex; align-items: center; gap: 10px; min-height: 44px; font: 700 22px/1 var(--head-font); letter-spacing: .01em; color: var(--huck); text-decoration: none; }
   .logo svg { border-radius: 8px; flex: 0 0 auto; }
   header.site nav { display: flex; flex-wrap: wrap; gap: 0 12px; justify-content: flex-end; }
   header.site nav a, footer nav a, nav.crumbs a { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; min-width: 44px; }
   header.site nav a { color: var(--ink2); text-decoration: none; font-size: 15px; }
   header.site nav a:hover { color: var(--huck); text-decoration: underline; }
-  h1, h2 { font-family: var(--display); font-weight: 800; color: var(--huck); letter-spacing: -.005em; }
-  h1 { font-size: clamp(34px, 7.5vw, 54px); line-height: 1.04; margin: 0 0 16px; text-transform: uppercase; overflow-wrap: anywhere; }
+  h1, h2 { font-family: var(--head-font); font-weight: 700; color: var(--huck); letter-spacing: -.005em; }
+  h1 { font-size: clamp(38px, 11.88vw, 54px); line-height: 1.08; margin: 0 0 16px; overflow-wrap: anywhere; text-wrap: balance; }
   .kicker { font: 700 15px/1.4 var(--text); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin: 0 0 12px; }
   h2 { font-size: 32px; line-height: 1.1; margin: 0 0 10px; }
   h3 { font-size: 18px; margin: 0; line-height: 1.3; }
