@@ -20,7 +20,7 @@ Static (no browser), every HTML file:
   and the DOH page
 - the web app keeps its localStorage under "hieats-" (every state site shares the github.io origin)
 - no other state's app, repo or name in docs/ (allowed: the data's own words and the Denver test);
-  privacy.html names every localStorage key explore.js writes; one comment only, the apple-itunes-app placeholder in <head>
+  privacy.html names every localStorage key explore.js writes; no HTML comments; one app, Eats Ranked (no page presents a state app: see OLD_APP below)
 - every page links mailto:nick@eatsranked.com, and work-with-nick@gmail.com appears nowhere in docs/; every footer says "Part of Eats
   Ranked" with a link to https://eatsranked.com/, and the #org Organization has that parentOrganization; dish lines are in a fixed order
 - Nick's copy decisions (2026-10-13): "Confirmed listing" and "Confirmed only" (any case) nowhere in docs/, and the web app's tier label
@@ -105,7 +105,55 @@ OTHER_SLUGS = [r"\b(?:wi|co|fl|ca|wa|ct|me|ny|chi|mi|tx|id|pa)-eats\b", r"chicag
                r"Connecticut|Maine|New York|Michigan|Texas|Idaho|Pennsylvania|WI|CO|CT|NY|ID) Eats\b", r"\bChi(?:cago)? Ranked\b", r"\bChicago Restaurants: Ranked\b"]
 OTHER_OK = ["Denver's full list of food licenses (the same map data, in Colorado)", "Denver's full list of food licenses (Colorado, same map data)",
             "Denver's full food-license list"]
-APP_BANNER_TODO = '<!-- <meta name="apple-itunes-app" content="app-id=APP_ID"> fill in once the App Store record exists -->'
+# Nick, 2026-11-14: one app, Eats Ranked, carries the state guides; no state has an app of its own. This site is the guide on the web
+# and points to the hub's app section. Three rules, all checked on every page:
+# - OLD_APP: what a page that still presents a Hawaii-only app carries, anywhere in its source (markup, meta, JSON-LD, scripts)
+# - the word "app" is read only in APP_OK's phrases, and "iPhone"/"iPad" only in a sentence that names Eats Ranked (visible text,
+#   meta and alt text, JSON-LD; the web app's own code comments aside)
+# - NOT_YET: until the app is on the App Store (the copy then says "free on the App Store"), no page says it can be had
+APP_URL = "https://eatsranked.com/#app"
+APP_PRIVACY_URL = "https://eatsranked.com/privacy.html"
+OLD_APP = re.compile(r"apple-itunes-app|MobileApplication|APP_STORE_URL|store-btn|store-note|apps\.apple\.com|/img/screen-|TestFlight"
+                     r"|early(?:%20|\s)+access|iPhone app|Hawaiʻi Eats: Restaurants|restaurant apps state by state", re.I)
+APP_OK = re.compile(r"\bweb app\b|\bEats Ranked app\b|\bone free app\b|\bApp Store\b|\.app\b")   # ".app": a place's own web address
+APP_WORD = re.compile(r"\bapps?\b", re.I)
+DEVICE = re.compile(r"\biPhones?\b|\biPads?\b")
+NOT_YET = re.compile(r"\b(?:download|get|install)\b[^.!?]{0,40}\b(?:Eats Ranked|App Store)\b|\b(?:available|out now|live) (?:on|in) the App Store\b", re.I)
+
+
+def readable(text):
+    """What a reader, a search engine or a link preview takes from a page: its visible text, the text in content=, alt=, title= and
+    aria-label= attributes, and its JSON-LD. Executable scripts and styles are left out."""
+    lds = re.findall(r'<script type="application/ld\+json">(.*?)</script>', text, re.S)
+    body = re.sub(r"<script\b.*?</script>|<style\b.*?</style>", " ", text, flags=re.S)
+    attrs = re.findall(r'\s(?:content|alt|title|aria-label)="([^"]*)"', body)
+    plain = re.sub(r"<[^>]+>", " ", body)
+    out = "\n".join([plain] + attrs + [x.encode().decode("unicode_escape", "replace") if "\\u" in x else x for x in lds])
+    return re.sub(r"[ \t]+", " ", html.unescape(out).replace("\u2019", "'"))
+
+
+def one_app_problems(where, text):
+    """The one-app rule for a page (see OLD_APP above)."""
+    out = []
+    for m in OLD_APP.finditer(html.unescape(text)):
+        out.append(f"{where}: still presents a Hawaii-only app ({m.group(0)!r} in the page source)")
+    r = readable(text)
+    for m in APP_WORD.finditer(APP_OK.sub(lambda k: "#" * len(k.group(0)), r)):
+        out.append(f"{where}: says 'app' outside 'web app', 'Eats Ranked app', 'one free app' and 'App Store': …{r[max(0, m.start() - 50):m.end() + 30].strip()!r}…")
+    for sent in re.split(r"(?<=[.!?])\s+|\n", r):
+        if DEVICE.search(sent) and "Eats Ranked" not in sent:
+            out.append(f"{where}: names iPhone or iPad without naming Eats Ranked: {sent.strip()[:120]!r}")
+    if f'href="{APP_URL}"' not in text:
+        out.append(f"{where}: no link to the Eats Ranked app's section on the hub ({APP_URL})")
+    if "free on the App Store" not in r:
+        for m in NOT_YET.finditer(r):
+            out.append(f"{where}: says the app can be had before it is on the App Store: {m.group(0)!r}")
+    for sent in re.split(r"(?<=[.!?])\s+|\n", r):
+        if "App Store" in sent and not re.search(r"coming soon to the App Store|free on the App Store", sent):
+            out.append(f"{where}: names the App Store without 'coming soon to' (or, once live, 'free on'): {sent.strip()[:120]!r}")
+    return out
+
+
 MIN_LIST = 4          # make-site.py's MIN_LIST: a statewide list page needs this many places
 PORTS = range(*map(int, os.environ["QA_PORTS"].split("-"))) if os.environ.get("QA_PORTS") else range(8853, 8860)   # QA_PORTS=8740-8750 (end exclusive)
 # One statewide inspector: DOH's Food Safety Branch (QA never fetches its page). The site explains the placards and links this page.
@@ -414,13 +462,12 @@ def static_checks():
             problems.append(f"{where}: no referrer meta")
         if pg.bad_attrs:
             problems.append(f"{where}: inline style/event attributes break the CSP: {pg.bad_attrs[:3]}")
-        # the one comment allowed: the SEO spec's Smart App Banner placeholder in <head>, until the real meta tag replaces it
-        comments = re.findall(r"<!--.*?-->", text, re.S)
-        if any(c != APP_BANNER_TODO for c in comments) or text.count("<!--") != len(comments):
+        if "<!--" in text:     # no comment at all: the Smart App Banner placeholder went with the Hawaii-only app (2026-11-19)
             problems.append(f"{where}: HTML comment left in the output")
-        if 'name="apple-itunes-app"' not in text.replace(APP_BANNER_TODO, ""):
-            if comments != [APP_BANNER_TODO] or text.find(APP_BANNER_TODO) > text.find("</head>"):
-                problems.append(f"{where}: no apple-itunes-app meta and no commented placeholder for it in <head>")
+        # --- one app, Eats Ranked: no page presents a Hawaii-only app, and every page points to the hub's app section
+        problems.extend(one_app_problems(where, text))
+        if where == "privacy.html" and (f'href="{APP_PRIVACY_URL}"' not in text or "this website doesn't track you" not in html.unescape(text).replace("\u2019", "'")):
+            problems.append("privacy.html: doesn't link the Eats Ranked app's own privacy policy, or doesn't say this website doesn't track you")
         if any(i.startswith("data:") for i in pg.icons):
             problems.append(f"{where}: data: favicon")
         # --- contact address and the Eats Ranked family (every page, 404, privacy, terms and the web app included)
@@ -429,7 +476,7 @@ def static_checks():
         foot = re.search(r"<footer>(.*?)</footer>", text, re.S)
         foot_text = re.sub(r"\s+", " ", html.unescape(re.sub(r"<[^>]+>", "", foot.group(1)))) if foot else ""
         if not foot or not re.search(r'<a href="' + re.escape(HUB) + r'"[^>]*>Eats Ranked</a>', foot.group(1)) \
-                or "Part of Eats Ranked, restaurant apps state by state." not in foot_text:
+                or "Part of Eats Ranked, free restaurant guides state by state." not in foot_text:
             problems.append(f"{where}: the footer doesn't say 'Part of Eats Ranked' with a link to {HUB}")
         orgs = [b for raw in pg.ldjson for b in ((lambda ld: [ld] + ld.get("@graph", []) if isinstance(ld, dict) else [])(json.loads(raw)))
                 if isinstance(b, dict) and b.get("@type") == "Organization" and str(b.get("@id", "")).endswith("/#org")]
@@ -555,10 +602,6 @@ def static_checks():
                 problems.append(f"{where}: broken link {ref}")
             elif frag and f.endswith(".html") and "/explore/" not in f and frag not in ids_in(rel(f)):
                 problems.append(f"{where}: link to a missing anchor {ref}")
-        # --- the App Store button has no Apple logo until it's Apple's own badge
-        for m in re.finditer(r'<a class="btn store-btn"[^>]*>(.*?)</a>', text, re.S):
-            if "<svg" in m.group(1):
-                problems.append(f"{where}: the early-access button carries an Apple logo")
         # --- James Beard chips on lists match the data (a semifinalist or nominee is never a winner)
         for m in re.finditer(r'<li id="([^"]+)"><h3><a href="[^"]*/places/([^"/]+)\.html">.*?</li>', text, re.S):
             ppath = f"places/{m.group(2)}.html"

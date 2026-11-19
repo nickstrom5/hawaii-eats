@@ -1,4 +1,4 @@
-// Hawaiʻi Eats web app: the iPhone app's guides, search, filters, map and place details, in the browser. Keep its guide rules in
+// Hawaiʻi Eats web app: the guides, search, filters, map and place details, in the browser. Keep its guide rules in
 // step with HawaiiEats/Models/Guide.swift and its search with HawaiiEats/Models/Search.swift.
 // Same data file as the app (split into core + detail by scripts/make-site.py). No cookies, no trackers; saved places and the last
 // guide live in this browser's localStorage only, under "hieats-" keys, because other sites share the nickstrom5.github.io origin.
@@ -370,10 +370,8 @@
     }
     html += section("How we know it's here", kv("Listed as", TIER[p.t]) + (p.t === 2 ? kv("Official record", JUR[p.j]) : "")
       + (p.ch >= 2 ? kv("Locations in Hawaii", p.ch.toLocaleString()) : "") + `<p class="ex-fine">${esc(howWeKnow(p))}</p>`);
-    const storeUrl = safeUrl(APP.dataset.store);   // set by scripts/make-site.py once the App Store listing exists
-    html += storeUrl
-      ? `<p class="ex-app">Save it on your phone: <a href="${esc(storeUrl)}" rel="noopener">get the free iPhone app</a></p>`
-      : `<p class="ex-app">The iPhone app is coming soon. <a href="${BASE}/#download">Ask for early access</a></p>`;
+    // the app is Eats Ranked, which carries this guide; data-applive is set by scripts/make-site.py (APP_LIVE) once it's on the App Store
+    html += `<p class="ex-app">Also in <a href="https://eatsranked.com/#app" rel="noopener">Eats Ranked for iPhone and iPad</a>, ${APP.dataset.applive ? "free on" : "coming soon to"} the App Store.</p>`;
     panel.innerHTML = html;
     panel.dataset.id = p.id;
     panel.hidden = false;

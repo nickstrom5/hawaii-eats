@@ -32,7 +32,6 @@ import math
 import os
 import re
 import shutil
-import struct
 import unicodedata
 from collections import Counter, defaultdict
 from urllib.parse import quote
@@ -47,27 +46,27 @@ REPO = "hawaii-eats"
 DOMAIN = f"https://{CUSTOM_DOMAIN}" if CUSTOM_DOMAIN else f"https://nickstrom5.github.io/{REPO}"
 BASE = "" if CUSTOM_DOMAIN else f"/{REPO}"     # path prefix for root-relative links
 BRAND = "Hawaiʻi Eats"
-APP_NAME = "Hawaiʻi Eats: Restaurants"
 TAGLINE = "Plate lunch, poke & shave ice guide"
 EMAIL = "nick@eatsranked.com"   # the public site's contact (Nick, 2026-10-12: Cloudflare Email Routing)
 AUTHOR = "Nicholas Soderstrom"     # the app's maker; name only in public markup, never a personal email or phone
 PUBLISHED = "2026-10-21"        # the site's first publication (Article datePublished)
-SITE_REV = "2026-10-21"         # the last change to this generator's own copy or code: bump it when you change the words
-POLICY_UPDATED = "2026-10-21"   # privacy policy and terms: bump only when their text changes
-PRIVACY_UPDATED = "2026-10-26"   # the privacy policy alone: the app's data updates (OTA-DATA.md)
+SITE_REV = "2026-11-19"         # the last change to this generator's own copy or code: bump it when you change the words
+POLICY_UPDATED = "2026-11-19"   # privacy policy and terms: bump only when their text changes
+PRIVACY_UPDATED = "2026-11-19"  # the privacy policy alone (11-19: the app is Eats Ranked, with its own policy on the hub)
 CHECKED = "October 2026"        # when the hand checks behind hc=1 were done, each against a 2025 or 2026 source
 MIN_LIST = 4                    # a statewide list page needs at least this many places
 OG_COUNT = 3800                 # docs/og.png says "3,800+ restaurants" (scripts/make-brand.swift): re-run it if the count drops
 
-# The App Store listing. None until the app is live. When it is: set APP_STORE_URL (https://apps.apple.com/app/id...), APP_ID, and
-# put Apple's official "Download on the App Store" badge artwork at docs/img/app-store-badge.svg first (from Apple's marketing
-# resources; never redraw it). Every page then links the badge, gets the Smart App Banner meta tag, and the MobileApplication
-# JSON-LD gets offers, installUrl and sameAs. The build fails if the badge file is missing.
-APP_STORE_URL = None
-APP_ID = ""
-APP_STORE_BADGE = "/img/app-store-badge.svg"
-if APP_STORE_URL:
-    assert APP_ID and os.path.exists(DOCS + APP_STORE_BADGE), f"set APP_ID and add Apple's badge at docs{APP_STORE_BADGE} before setting APP_STORE_URL"
+# The app. This site is the Hawaii guide on the web. On iPhone and iPad the same guide is inside Eats Ranked, the one app that
+# carries the state guides; there is no Hawaii-only app. Pages link the hub's app section, which shows the App Store badge once
+# there is one, so nothing here links the App Store or needs Apple's artwork. Until Eats Ranked is approved the copy says
+# "coming soon"; on the day it is, set APP_LIVE = True and rebuild. Never "download" or "get" before then.
+APP_URL = "https://eatsranked.com/#app"
+APP_PRIVACY_URL = "https://eatsranked.com/privacy.html"
+APP_LIVE = False
+APP_WHEN = "free on the App Store" if APP_LIVE else "coming soon to the App Store"
+APP_LINK = f'<a href="{APP_URL}" rel="noopener">Eats Ranked for iPhone and iPad</a>'
+APP_NOTE = f"Free website. Also in {APP_LINK}, {APP_WHEN}."      # the line under a page's opening paragraph
 
 D = json.load(open(f"{ROOT}/data/app/places.json"))
 TODAY = max(str(D.get("generated") or SITE_REV)[:10], SITE_REV)   # sitemap lastmod and dateModified move with the data or the copy
@@ -293,12 +292,6 @@ def slug(s):
     return re.sub(r"[^a-z0-9]+", "-", s.lower().replace("'", "").replace("’", "")).strip("-")
 
 
-def png_size(path):
-    with open(path, "rb") as f:
-        head = f.read(24)
-    return struct.unpack(">II", head[16:24])
-
-
 def join_words(xs, conj="and"):
     xs = [x for x in xs if x]
     if len(xs) <= 1:
@@ -414,7 +407,6 @@ CSS = """
   .cta-row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
   .btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 44px; background: var(--russet); color: var(--on-russet); font-weight: 700; padding: 13px 20px; border-radius: 14px; text-decoration: none; font-size: 17px; line-height: 1.2; }
   .btn-ghost { background: transparent; color: var(--huck); border: 2px solid var(--huck); }
-  .store-badge { display: inline-flex; min-height: 44px; align-items: center; }
   .pill { font-size: 14px; color: var(--muted); }
   .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 28px 0 0; padding: 0; list-style: none; }
   .stats li { background: var(--surface); border: 1px solid var(--rule); border-radius: 14px; padding: 14px; }
@@ -424,10 +416,6 @@ CSS = """
   .step { display: flex; gap: 14px; background: var(--surface); border: 1px solid var(--rule); border-radius: var(--radius); padding: 18px; }
   .step .n { flex: 0 0 32px; height: 32px; border-radius: 50%; background: var(--russet); color: var(--on-russet); font-weight: 800; display: grid; place-items: center; }
   .step p { margin: 4px 0 0; color: var(--ink2); }
-  .shots { display: flex; gap: 14px; overflow-x: auto; margin: 0 -20px; padding: 4px 20px 14px; scroll-snap-type: x proximity; list-style: none; }
-  .shots li { flex: 0 0 auto; width: 210px; scroll-snap-align: start; }
-  .shots img { display: block; width: 210px; height: auto; border-radius: 24px; border: 1px solid var(--rule); background: var(--surface2); }
-  .shots p { font-size: 14px; color: var(--muted); margin: 8px 2px 0; }
   .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
   .card { background: var(--surface); border: 1px solid var(--rule); border-radius: var(--radius); padding: 18px; }
   .card p { margin: 6px 0 0; color: var(--ink2); }
@@ -521,7 +509,7 @@ BASE_LD = {"@context": "https://schema.org", "@graph": [
      "parentOrganization": {"@type": "Organization", "@id": "https://eatsranked.com/#organization", "name": "Eats Ranked",
                             "url": "https://eatsranked.com/"}},
     {"@type": "Person", "@id": PERSON_ID, "name": AUTHOR, "url": f"{DOMAIN}/about.html"},
-    {"@type": "WebSite", "@id": SITE_ID, "name": BRAND, "alternateName": [APP_NAME, "Hawaii Eats app", "Hawaii Eats"], "url": f"{DOMAIN}/",
+    {"@type": "WebSite", "@id": SITE_ID, "name": BRAND, "alternateName": ["Hawaii Eats"], "url": f"{DOMAIN}/",
      "inLanguage": "en", "publisher": {"@id": ORG_ID}}]}
 
 
@@ -540,21 +528,8 @@ def crumbs(trail):
     return f'<nav class="crumbs" aria-label="Breadcrumb"><ol>{items}</ol></nav>', ld
 
 
-STORE_NOTE = "Free for iPhone and iPad." if APP_STORE_URL else f"{BRAND} for iPhone and iPad is free, with its App Store release still ahead."
-
-
-def store_button(label="Ask for early access"):
-    if APP_STORE_URL:   # Apple's own badge artwork, unaltered (see APP_STORE_URL above)
-        return (f'<a class="store-badge" href="{e(APP_STORE_URL)}" rel="noopener">'
-                f'<img src="{APP_STORE_BADGE}" alt="Download on the App Store" width="120" height="40"></a>')
-    # a plain mailto button until launch: no Apple logo (Apple allows it only in its own badge artwork). Only Nick's internal
-    # TestFlight group exists (Nick, 2026-10-13), so the label is an ask and no copy says we'll send an invite or a link.
-    return (f'<a class="btn store-btn" href="mailto:{EMAIL}?subject=Hawaii%20Eats%20early%20access&amp;body=Send%20me%20the%20TestFlight%20link.">'
-            f'<span class="store-label">{label}</span></a>')
-
-
 def cta(extra=""):
-    return f'<div class="cta-row">{store_button()}{extra}<span class="pill store-note">{STORE_NOTE}</span></div>'
+    return f'<div class="cta-row">{extra}<span class="pill">{APP_NOTE}</span></div>'
 
 
 def sha256_src(s):
@@ -587,14 +562,14 @@ def nav_links():
 
 
 def footer_links():
-    out = [f'<a href="/">{BRAND} app</a>', '<a href="/explore/">Search Hawaii restaurants</a>']
+    out = [f'<a href="/">{BRAND} home</a>', '<a href="/explore/">Search Hawaii restaurants</a>']
     out += [f'<a href="/{g["path"]}">{e(cap1(g["name"].replace("Hawaii ", "", 1)))}</a>' for g in PAGED]
     if HON_PAGE:
         out.append(f'<a href="/{HON_PATH}">James Beard honorees</a>')
     if OLD_PAGE:
         out.append(f'<a href="/{OLD_PATH}">Oldest restaurants</a>')
     out += [f'<a href="/{INS_PATH}">Restaurant inspections</a>', '<a href="/cities/">Towns and islands</a>', '<a href="/about.html">About and sources</a>',
-            '<a href="/privacy.html">Privacy policy</a>', '<a href="/terms.html">Terms of use</a>', f'<a href="mailto:{EMAIL}">Email us</a>']
+            f'<a href="{APP_URL}" rel="noopener">Eats Ranked app</a>', '<a href="/privacy.html">Privacy policy</a>', '<a href="/terms.html">Terms of use</a>', f'<a href="mailto:{EMAIL}">Email us</a>']
     return "\n      ".join(out)
 
 
@@ -623,9 +598,6 @@ def page(path, title, desc, body, lds=(), robots="index,follow,max-image-preview
     ld = "\n".join(jsonld(x) for x in (BASE_LD, *lds))
     canon = f'<link rel="canonical" href="{url}">\n' if indexed and not is404 else ""
     og_url = f'<meta property="og:url" content="{url}">\n' if indexed and not is404 else ""
-    # the Smart App Banner once the App Store record exists; until then the SEO spec's placeholder (the only comment in any page)
-    banner = (f'<meta name="apple-itunes-app" content="app-id={APP_ID}">\n' if APP_STORE_URL else
-              '<!-- <meta name="apple-itunes-app" content="app-id=APP_ID"> fill in once the App Store record exists -->\n')
     doc = f"""<!DOCTYPE html>
 <html lang="en" data-base="{BASE}">
 <head>
@@ -638,7 +610,7 @@ def page(path, title, desc, body, lds=(), robots="index,follow,max-image-preview
 <meta name="description" content="{e(desc)}">
 {canon}<meta name="robots" content="{robots}">
 <meta name="theme-color" content="#4b2a5c">
-{banner}<meta property="og:title" content="{e(title)}">
+<meta property="og:title" content="{e(title)}">
 <meta property="og:description" content="{e(desc)}">
 {og_url}<meta property="og:type" content="{og_type}">
 <meta property="og:site_name" content="{BRAND}">
@@ -675,7 +647,7 @@ def page(path, title, desc, body, lds=(), robots="index,follow,max-image-preview
       {footer_links()}
     </nav>
     <p>{e(SOURCES_LINE)}</p>
-    <p>© 2026 {BRAND}, an independent app by {AUTHOR}. Part of <a href="https://eatsranked.com/" rel="noopener">Eats Ranked</a>, restaurant apps state by state.</p>
+    <p>© 2026 {BRAND}, an independent guide by {AUTHOR}. Part of <a href="https://eatsranked.com/" rel="noopener">Eats Ranked</a>, free restaurant guides state by state.</p>
   </footer>
 </div>
 </body>
@@ -946,8 +918,8 @@ HOW_BUILT = ("How this list was made: for every place we read a 2025 or 2026 sou
              "news, and matched the street address to it. A place whose only source was older, whose website had gone dark, or whose menu "
              "named the dish just in passing stayed off. Review sites played no part, and the places run by region and town, not by anybody's "
              f"score. Menus change, so check before you go. Our sources are on the <a href=\"/about.html\">about {BRAND}</a> page.")
-IN_APP = (f"On an iPhone or iPad, {BRAND} puts this same list in order of distance from wherever you're standing, and a tap on a place "
-          "brings up Apple Maps' card with today's hours, photos and directions.")
+IN_APP = ('In the <a href="/explore/">web search</a>, Near me puts this same list in order of distance from wherever you\'re standing, and each place '
+          "links to Apple Maps for today's hours, photos and directions.")
 
 
 def std_titles(g, n, extra=()):
@@ -966,7 +938,7 @@ def std_descs(g, places, what):
             f"Where Hawaii serves {what}: {plural(n, 'place')} in {towns} and beyond, each matched to a 2025–26 menu or news story in {CHECKED}.",
             f"{plural(n, g['noun'], g['nouns'])} around Hawaii, listed by island and town with dishes and links, each matched to a 2025–26 source in {CHECKED}.",
             f"{cap1(what)}: {plural(n, 'place')} on the islands, each read against a 2025–26 menu or local news story in {CHECKED}."]
-    return base + [x + y for x in base for y in (" No ratings.", " Free, no ads.", " No ratings, no ads.", " The app is coming soon.")]
+    return base + [x + y for x in base for y in (" No ratings.", " Free, no ads.", " No ratings, no ads.", " Free to use on the web.")]
 
 
 # ---------------------------------------------------------------- the Hawaii guide pages
@@ -1146,7 +1118,7 @@ nav, bc = crumbs([("Home", "/"), ("Hawaii restaurant inspections", "/" + INS_PAT
 rows = "".join(f'<tr><th scope="row">{e(c)}</th><td>{e(m)}</td></tr>' for c, m in PLACARDS)
 ins_qas = [
     ("Does Hawaii grade restaurants?", "Not with a letter or a number. The Department of Health posts a color-coded placard: green for a pass, yellow for a conditional pass with a follow-up inspection, red for a closure. The placard on the door shows the most recent inspection."),
-    ("Why doesn't Hawaiʻi Eats show inspection results?", f"Because there is no bulk data to show fairly. DOH publishes results one search at a time and no statewide file, so {BRAND} shows no inspection results rather than a partial or guessed picture, and never gives a grade of its own. Each place in the app and on this site links DOH's food safety page."),
+    ("Why doesn't Hawaiʻi Eats show inspection results?", f"Because there is no bulk data to show fairly. DOH publishes results one search at a time and no statewide file, so {BRAND} shows no inspection results rather than a partial or guessed picture, and never gives a grade of its own. Each place on this site links DOH's food safety page."),
     ("Who inspects restaurants in Hawaii?", "The State Department of Health's Food Safety Branch, on every island. Counties don't inspect restaurants."),
     ("Where are the rules?", "In Hawaii Administrative Rules, Title 11, Chapter 50, the state food safety code. The placard program has run since February 24, 2014, and the rules were last amended on August 24, 2025."),
 ]
@@ -1246,7 +1218,7 @@ def area_desc(c, n_town, secs, suburb_lead, top):
              f", plus {n_town:,} local places to eat on a searchable map", f", plus {n_town:,} more local places to eat",
              f", plus what {c} eats, by kind of restaurant", f". Most common kind of place here: {top}" if top else "", ""]
     ex1 = [x for x in ((f" Hand-checked in {CHECKED}." if any(s[0] not in ("honors", "oldest") for s in secs) else ""),
-                       " Free iPhone app coming soon.", " Free, no ads, no ratings.") if x]
+                       " Free on the web, no sign-in.", " Free, no ads, no ratings.") if x]
     extras = [""] + ex1 + [a + b for i, a in enumerate(ex1) for b in ex1[i + 1:]]
 
     def gen():
@@ -1257,8 +1229,8 @@ def area_desc(c, n_town, secs, suburb_lead, top):
                     for x in extras:
                         yield f"{lead}: {J}{tail}.{x}"
         for tail in tails:   # a town with none of the lists' places: what it eats
-            for x in extras + [" Free Hawaii restaurant guide for iPhone and iPad, coming soon.", " A free Hawaii restaurant guide, no ads and no ratings.",
-                               " From open map data, with no ratings and no ads.", " Free Hawaii restaurant guide, coming soon to iPhone and iPad. No ads, no ratings."]:
+            for x in extras + [" Free Hawaii restaurant guide on the web, with no ads or login.", " A free Hawaii restaurant guide, no ads and no ratings.",
+                               " From open map data, with no ratings and no ads.", " Free Hawaii restaurant guide on the web, with nothing to buy. No ads, no ratings."]:
                 yield f"Restaurants in {c}, Hawaii: the kinds of places {c} eats at most{tail}.{x}"
                 yield f"Where to eat in {c}, Hawaii: the kinds of restaurants, cafés and bars {c} has most{tail}.{x}"
     return fit(list(dict.fromkeys(s.replace("..", ".") for s in gen())), 140, 160, c + " description")
@@ -1314,7 +1286,7 @@ for c in CITY_PAGES:
     if any(s[1] for s in secs):
         notes.append(f"The Hawaii lists were checked by hand in {CHECKED} against 2025–26 sources.")
     lede = ((f"{area}: {e(join_words(counts))}. " if counts else f"Our hand-checked guides haven't reached {e(c)} yet; that research is still under way. ")
-            + " ".join(notes) + (" " if notes else "") + f"The {BRAND} app and the web search include {n_town:,} restaurants, cafés, bars and bakeries in {e(c)}, closest first once you share your location.")
+            + " ".join(notes) + (" " if notes else "") + f"The web search includes {n_town:,} restaurants, cafés, bars and bakeries in {e(c)}, closest first once you share your location.")
     reg = DISTRICT_OF.get(CITY_ISLAND.get(c))
 
     def dist(p, c=c):
@@ -1371,12 +1343,12 @@ for d in DISTRICTS:
         whats = [join_words([sec_desc_phrase(s[0], s[2]) for s in secs[:k]]) for k in range(min(len(secs), 3), 0, -1)]
         tails = [f", plus {n_here:,} places to eat by town.", f", plus {n_here:,} more places to eat, town by town.",
                  f", plus {n_here:,} places to eat by town and what the health placards mean."]
-        extras = ["", " Free, no ratings.", f" Hand-checked in {CHECKED}.", " Free app coming soon.", " Free, no ads, no ratings."]
+        extras = ["", " Free, no ratings.", f" Hand-checked in {CHECKED}.", " Free, and no sign-in.", " Free, no ads, no ratings."]
         for w in whats:
             for t in tails:
                 for x in extras:
                     yield f"{cap1(w)} on {name}{t}{x}"
-        for x in extras + [" A free guide, no ratings.", " Free iPhone app coming soon, no ads, no ratings."]:
+        for x in extras + [" A free guide, no ratings.", " Free on the web, no sign-in, no ads, no ratings."]:
             yield f"{n_here:,} restaurants, cafés and bars on {name}, Hawaii, by town, with our hand-checked picks and what the health placards mean.{x}"
             yield f"Where to eat on {name}: {n_here:,} restaurants, cafés and bars by town, plus our hand-checked picks from local menus and news.{x}"
             yield f"Restaurants on {name}, Hawaii: {n_here:,} places to eat by town, the hand-checked picks, and how DOH's green, yellow and red placards work.{x}"
@@ -1606,8 +1578,8 @@ for p in PAGE_PLACES:
   </section>
   <section id="app" class="final">
     <h2>Save it for the trip</h2>
-    <p class="sub">The free {BRAND} app has {e(p.name)} and {N_REST - 1:,} other Hawaii places, sorted by distance from you, with Apple Maps' live hours and photos.</p>
-    {cta()}
+    <p class="sub">The web search has {e(p.name)} and {N_REST - 1:,} other Hawaii places, nearest first once you share your location, and keeps the ones you save. The same guide is in {APP_LINK}, {APP_WHEN}.</p>
+    <div class="cta-row"><a class="btn" href="/explore/#p={p.id}">Open in the web search</a></div>
   </section>
   </main>"""
     ld = {"@context": "https://schema.org", "@id": url + "#place", **restaurant_ld(p, url), "mainEntityOfPage": url}
@@ -1749,10 +1721,10 @@ body = f"""{nav}
   <section class="ex-hero">
     <p class="kicker">{BRAND} · in your browser</p>
     <h1>Search Hawaii restaurants</h1>
-    <p class="sub">Pick a guide for the {NP} places we checked by hand or the {plural(len(HON_L), "James Beard honoree")}, or choose All restaurants and type a name, a town, a street or a dish to look through {N_REST:,} Hawaii restaurants, cafés, bars and bakeries. It runs on the data the coming iPhone and iPad app ships with, and whatever you save stays in this browser.</p>
+    <p class="sub">Pick a guide for the {NP} places we checked by hand or the {plural(len(HON_L), "James Beard honoree")}, or choose All restaurants and type a name, a town, a street or a dish to look through {N_REST:,} Hawaii restaurants, cafés, bars and bakeries. Whatever you save stays in this browser.</p>
   </section>
   <noscript><p>Searching needs JavaScript turned on; the guide pages don't: {noscript_links}{", " if noscript_links else ""}<a href="/cities/">towns and islands</a>.</p></noscript>
-  <div id="ex-app" data-default="{DEFAULT_GUIDE}" data-store="{e(APP_STORE_URL or '')}">
+  <div id="ex-app" data-default="{DEFAULT_GUIDE}"{' data-applive="1"' if APP_LIVE else ""}>
     <div class="ex-controls">
       <div class="ex-guides" role="group" aria-label="Guides">{guide_buttons}</div>
       <div class="ex-row1">
@@ -1791,55 +1763,24 @@ webapp_ld = {"@context": "https://schema.org", "@type": "WebApplication", "name"
 page("explore/index.html", title, desc, body, [webapp_ld, bc], extra_css=EXPLORE_CSS, og_type="website")
 
 # ---------------------------------------------------------------- landing page
-shots = [("home", "Hawaiʻi Eats home screen: Plate Lunch & Drive-Ins, Poke, Saimin, Shave Ice, Malasadas, Hawaiian Food, Musubi and Loco Moco guides, with a search box.", "Guides for plate lunch, poke and shave ice."),
-         ("plate", "The hand-checked Plate Lunch & Drive-Ins list in Hawaiʻi Eats, sorted by distance from downtown Honolulu.", "Plate lunch nearest you first."),
-         ("detail", "A place in Hawaiʻi Eats: address, a button for ratings, hours and photos in Apple Maps, what's on the menu and what the health placards mean.", "Each place, with live Apple Maps hours and photos."),
-         ("map", "Hawaiʻi Eats map of Honolulu with pins for hand-checked places.", "The map, by guide."),
-         ("poke", "The hand-checked Poke list in Hawaiʻi Eats.", "Poke counters and fish markets.")]
-shot_html = []
-for i, (name, alt, capn) in enumerate(shots):   # App Store screenshots don't exist yet: each one shows up once scripts/site-images.sh makes it
-    png = f"{DOCS}/img/screen-{name}.png"
-    if not os.path.exists(png):
-        continue
-    w, h = png_size(png)
-    src = f'<source srcset="/img/screen-{name}.webp" type="image/webp">' if os.path.exists(f"{DOCS}/img/screen-{name}.webp") else ""
-    shot_html.append(f'<li><picture>{src}<img src="/img/screen-{name}.png" alt="{e(alt)}" width="{w}" height="{h}" loading="lazy" decoding="async"></picture><p>{e(capn)}</p></li>')
-
 paged_names = [g["app"].lower() for g in PAGED]
 faq = [
     ("Does Hawaii grade or score its restaurants?", f"Not with a letter or a number. The State Department of Health inspects every food business on every island and posts a color-coded placard: green, yellow or red. It publishes results one search at a time, not in bulk, so {BRAND} has no inspection results to show; each place links DOH's food safety page, and our inspections page explains the three colors."),
     ("Does it cover every island?", f"Every inhabited one but Niʻihau: the {N_REST:,} places reach {N_TOWNS:,} towns on Oʻahu, Maui, Hawaiʻi Island, Kauaʻi, Molokaʻi and Lānaʻi."),
     ("What about Lahaina?", "The Aug 8, 2023 fire destroyed most of the town. A Lahaina place is listed only when a 2025 or 2026 source shows it open again; Kāʻanapali, Nāpili and Kapalua share its mailing address and are listed under their own names."),
     ("How were the plate lunch, poke and shave ice lists checked?", f"By hand, in {CHECKED}. Each of the {NP} places on the Hawaii lists has a 2025 or 2026 source, usually its own menu or a dated local news story, and its street address was checked against it. James Beard honors come from the Foundation's own announcements. Everything else is Overture Maps' open place data."),
-    (f"What does {BRAND} cost?", f"Not a cent. {BRAND} carries no advertising, sells nothing inside the app and never asks you to sign up. The iPhone and iPad app hasn't reached the App Store yet, but the search on this site works today."),
-    ("Where do ratings and hours come from?", f"From Apple Maps, live. {BRAND} keeps no ratings or reviews of its own and never sorts a list by them; tap a place and Apple's place card shows its current hours, photos and ratings."),
-    ("Is my location sent to you?", "No. Sharing it is up to you, and all it does is bring the nearest places to the top. The app keeps it on your iPhone or iPad, and on this site Near me does its sorting inside your browser, so your whereabouts never reach us."),
+    (f"What does {BRAND} cost?", f"Not a cent. {BRAND} carries no advertising, sells nothing and never asks you to sign up. It's a website, so it works in any browser. The same guide is in Eats Ranked for iPhone and iPad, {APP_WHEN}."),
+    ("Where do ratings and hours come from?", f"From Apple Maps, live. {BRAND} keeps no ratings or reviews of its own and never sorts a list by them; each place links to Apple Maps for its current hours, photos and ratings."),
+    ("Is my location sent to you?", "No. Sharing it is up to you, and all it does is bring the nearest places to the top. Near me does its sorting inside your browser, so your whereabouts never reach us."),
     ("Spotted a closed or missing place?", f"Email {EMAIL} with the restaurant's name and town, and the correction rides along with the next data update."),
 ]
 faq_html = "".join(f"<details><summary>{e(q)}</summary><p>{e(a)}</p></details>" for q, a in faq)
 faq_ld = {"@context": "https://schema.org", "@type": "FAQPage", "@id": f"{DOMAIN}/#faq",
           "mainEntity": [{"@type": "Question", "name": q, "acceptedAnswer": {"@type": "Answer", "text": a}} for q, a in faq]}
-app_node = {"@type": "MobileApplication", "@id": f"{DOMAIN}/#app", "name": APP_NAME,
-            "alternateName": [BRAND, f"{BRAND}: {TAGLINE}"],
-            "description": f"A free guide to {N_REST:,} restaurants on Hawaii's islands, with {NP} hand-checked picks for plate lunch, poke, saimin, shave ice, malasadas, Hawaiian food, musubi and loco moco, and {plural(len(HON_L), 'James Beard honoree')}. Sort by distance, open Apple Maps' live place card for hours and photos, and save places for your next trip.",
-            "url": f"{DOMAIN}/", "image": f"{DOMAIN}/og.png", "operatingSystem": "iOS, iPadOS", "applicationCategory": "TravelApplication",
-            "applicationSubCategory": "Food & Drink", "inLanguage": "en", "author": {"@id": PERSON_ID}, "publisher": {"@id": ORG_ID}}
-if APP_STORE_URL:   # no "offers" until the app is on the App Store
-    app_node.update({"offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD", "category": "free"}, "installUrl": APP_STORE_URL, "sameAs": [APP_STORE_URL]})
-if shot_html:
-    app_node["screenshot"] = f"{DOMAIN}/img/screen-home.png"
-app_ld = {"@context": "https://schema.org", "@graph": [app_node]}
-title = "Hawaiʻi Eats: Plate Lunch, Poke & Restaurant Guide App"
-desc = fit([f"Free iPhone and iPad guide to {N_REST:,} Hawaii restaurants, with {NP} hand-checked picks for plate lunch, poke, saimin, shave ice and musubi.",
-            f"A free iPhone and iPad guide to {N_REST:,} Hawaii restaurants on six islands, with {NP} hand-checked picks for plate lunch, poke, saimin and shave ice.",
-            f"A free iPhone and iPad guide to {N_REST:,} Hawaii restaurants, with hand-checked picks for plate lunch, poke, saimin, shave ice, malasadas and musubi."], 140, 160, "landing description")
-screens = f"""
-  <section id="screens">
-    <h2>What it looks like</h2>
-    <ul class="shots" tabindex="0" aria-label="{BRAND} app screenshots">
-      {"".join(shot_html)}
-    </ul>
-  </section>""" if shot_html else ""
+title = "Hawaiʻi Eats: Plate Lunch, Poke & Hawaii Restaurant Guide"
+desc = fit([f"A free guide to {N_REST:,} Hawaii restaurants on six islands, with {NP} hand-checked picks for plate lunch, poke, saimin, shave ice and musubi.",
+            f"A free guide to {N_REST:,} Hawaii restaurants on six islands, with {NP} hand-checked picks for plate lunch, poke, saimin, shave ice, malasadas and musubi.",
+            f"A free guide to {N_REST:,} Hawaii restaurants, with hand-checked picks for plate lunch, poke, saimin, shave ice, malasadas, Hawaiian food and musubi."], 140, 160, "landing description")
 cards = [f'<a class="card" href="/{g["path"]}"><h3>{e(cap1(g["name"]))}</h3><p>{plural(len(g["places"]), "hand-checked place")}.</p></a>' for g in PAGED]
 if HON_PAGE:
     cards.append(f'<a class="card" href="/{HON_PATH}"><h3>James Beard honorees</h3><p>{plural(len(HON_L), "honored Hawaii restaurant")}.</p></a>')
@@ -1848,16 +1789,16 @@ if OLD_PAGE:
 cards.append(f'<a class="card" href="/{INS_PATH}"><h3>Restaurant inspections</h3><p>What Hawaii\'s green, yellow and red placards mean, and where to look one up.</p></a>')
 cards.append(f'<a class="card" href="/explore/"><h3>Search every island</h3><p>Look up {N_REST:,} places to eat in {N_TOWNS:,} Hawaii towns, in your browser.</p></a>')
 coming = [g for g in SKIPPED if g["places"]]
-coming_note = (f' {cap1(join_words([g["app"] for g in coming]))} {"is" if len(coming) == 1 else "are"} in the app and the web search, with a page here once the list has {MIN_LIST} places.'
+coming_note = (f' {cap1(join_words([g["app"] for g in coming]))} {"is" if len(coming) == 1 else "are"} in the web search, with a page here once the list has {MIN_LIST} places.'
                if coming else "")
 stats = [(NP, "hand-checked picks"), (len(HON_L), "James Beard honorees"), (N_REST, "restaurants"), (N_TOWNS, "towns")]
 body = f"""  <main id="main">
   <section class="hero">
-    <p class="kicker">{BRAND}: the {TAGLINE[:1].lower() + TAGLINE[1:]} for iPhone and iPad</p>
+    <p class="kicker">{BRAND}: the {TAGLINE[:1].lower() + TAGLINE[1:]}</p>
     <h1>Hawaii restaurants, from plate lunch counters to shave ice stands</h1>
     <p class="lede">Where Hawaii actually eats: a plate lunch with two scoops rice, shoyu ʻahi by the pound, a bowl of saimin, a musubi from the warmer, shave ice soaking up its syrup. {BRAND} gathers {NP} places we checked by hand into guides for those, and lets you search {N_REST:,} restaurants, cafés, bars and bakeries across {N_TOWNS:,} towns on six islands. It's free.</p>
-    {cta('<a class="btn btn-ghost" href="/explore/">Search on the web</a>')}
-    <ul class="stats" aria-label="What's in the app">
+    {cta('<a class="btn" href="/explore/">Search on the web</a>')}
+    <ul class="stats" aria-label="What's in the guide">
       {"".join(f"<li><b>{n:,}</b><span>{t}</span></li>" for n, t in stats)}
     </ul>
   </section>
@@ -1875,10 +1816,9 @@ body = f"""  <main id="main">
       <li class="step"><div class="n" aria-hidden="true">3</div><div><h3>Head out.</h3><p>Pull up Apple Maps for today's hours and photos, ring ahead, get turn-by-turn directions, or tuck the place away for a later trip.</p></div></li>
     </ol>
   </section>
-{screens}
   <section id="guides">
     <h2>Hawaii food guides</h2>
-    <p class="sub">Each guide in the app also has its own page here, with every place, its dishes and its source.{e(coming_note)}</p>
+    <p class="sub">Each guide has its own page here, with every place, its dishes and its source.{e(coming_note)}</p>
     <div class="grid2">
       {"".join(cards)}
     </div>
@@ -1894,12 +1834,12 @@ body = f"""  <main id="main">
 
   <section id="pricing">
     <h2>No price tag, no sign-up</h2>
-    <p class="sub">{BRAND} costs nothing and shows no ads, and there's nothing to subscribe to or log in to. Every list is stored in the app itself, so it opens without a connection, which helps on the Hāna Highway or anywhere else out of cell range.</p>
+    <p class="sub">{BRAND} costs nothing and shows no ads, and there's nothing to subscribe to or log in to. The Eats Ranked app keeps a state's lists on the phone, so they open without a connection, which helps on the Hāna Highway or anywhere else out of cell range.</p>
   </section>
 
   <section id="privacy">
     <h2>Nothing here keeps track of you</h2>
-    <p class="sub">Your phone keeps your location and your saved places to itself: location, when you allow it, only reorders the lists by distance on the device. This website stores no cookies, and nothing on it tracks visits. <a href="/privacy.html">Read the privacy policy</a>.</p>
+    <p class="sub">Your browser keeps your location and your saved places to itself: location, when you allow it, only reorders the lists by distance, inside the page. This website stores no cookies, and nothing on it tracks visits. <a href="/privacy.html">Read the privacy policy</a>.</p>
   </section>
 
   <section id="faq">
@@ -1909,17 +1849,22 @@ body = f"""  <main id="main">
 
   <section id="download" class="final">
     <h2>Plan the next stop</h2>
-    <p class="sub">{f"Get {BRAND} free on the App Store for iPhone and iPad." if APP_STORE_URL else f"{BRAND} for iPhone and iPad is headed for the App Store, free. Until then, ask for early access."}</p>
-    <div class="cta-row">{store_button()}</div>
+    <p class="sub">The guides and the web search are free and open now. The same Hawaii guide is in {APP_LINK}, one free app with the state guides inside, {APP_WHEN}.</p>
+    <div class="cta-row"><a class="btn" href="/explore/">Search on the web</a><a class="btn btn-ghost" href="{APP_URL}" rel="noopener">About the Eats Ranked app</a></div>
   </section>
   </main>"""
-page("index.html", title, desc, body, [app_ld, faq_ld], og_type="website")
+page("index.html", title, desc, body, [faq_ld], og_type="website")
 
 # ---------------------------------------------------------------- about, sources and licenses
 os.makedirs(f"{DOCS}/licenses", exist_ok=True)
-for f in ("Apache-2.0", "CDLA-Permissive-2.0", "Foursquare-NOTICE"):
+for f in ("Apache-2.0", "CDLA-Permissive-2.0"):
     shutil.copyfile(f"{ROOT}/HawaiiEats/Resources/Licenses/{f}.txt", f"{DOCS}/licenses/{f}.txt")
-FOURSQUARE_NOTICE = open(f"{ROOT}/HawaiiEats/Resources/Licenses/Foursquare-NOTICE.txt").read().strip()
+# Foursquare's notice, word for word, with this site's own notice of changes as its last line (the bundled copy says "this app")
+_notice = open(f"{ROOT}/HawaiiEats/Resources/Licenses/Foursquare-NOTICE.txt").read()
+assert _notice.count("reformatted it for this app (2026).") == 1, "the Foursquare notice's last line changed: update the site's wording here"
+_notice = _notice.replace("reformatted it for this app (2026).", "reformatted it for this website (2026).")
+open(f"{DOCS}/licenses/Foursquare-NOTICE.txt", "w").write(_notice)
+FOURSQUARE_NOTICE = _notice.strip()
 den = (D.get("calibration") or {}).get("reference_colorado_denver", {}).get("groups", {}).get("meta_high", {}).get("official")
 den_txt = (f" Tested against Denver's full list of food licenses (the same map data, in Colorado), high-confidence listings matched a licensed "
            f"business {round(den * 100)}% of the time." if isinstance(den, (int, float)) else "")
@@ -1939,16 +1884,16 @@ body = f"""{nav}
   <section class="hero">
     <p class="kicker">About {BRAND}</p>
     <h1>Who makes {BRAND}, and how</h1>
-    <p class="lede">{BRAND} is an independent app and website by {AUTHOR}: a free guide to {N_REST:,} restaurants on Hawaii's islands, with {NP} hand-checked picks for plate lunch and drive-ins, poke, saimin, shave ice, malasadas and bakeries, Hawaiian food and okazuya, musubi, loco moco and Lahaina's reopened places, plus {plural(len(HON_L), "James Beard honoree")}. No account, no ads, no tracking.</p>
+    <p class="lede">{BRAND} is an independent website by {AUTHOR}: a free guide to {N_REST:,} restaurants on Hawaii's islands, with {NP} hand-checked picks for plate lunch and drive-ins, poke, saimin, shave ice, malasadas and bakeries, Hawaiian food and okazuya, musubi, loco moco and Lahaina's reopened places, plus {plural(len(HON_L), "James Beard honoree")}. No account, no ads, no tracking.</p>
   </section>
   <section id="sources">
     <h2 id="nicholas-soderstrom">Who makes it</h2>
-    <p>{AUTHOR} makes the {BRAND} app and this site. {BRAND} is not affiliated with, endorsed by or operated by the State of Hawaii, the Hawaii State Department of Health, the Hawaii Statewide GIS Program, any county or county liquor commission, the Hawaiʻi Tourism Authority, the U.S. Geological Survey, the James Beard Foundation, Apple, or any restaurant, university or chain.</p>
+    <p>{AUTHOR} makes this site and the Eats Ranked app, which carries the same guide on iPhone and iPad. {BRAND} is not affiliated with, endorsed by or operated by the State of Hawaii, the Hawaii State Department of Health, the Hawaii Statewide GIS Program, any county or county liquor commission, the Hawaiʻi Tourism Authority, the U.S. Geological Survey, the James Beard Foundation, Apple, or any restaurant, university or chain.</p>
     <h2>How the lists are built</h2>
-    <p>The Hawaii guides are hand-checked: each place was checked in {CHECKED} against a 2025 or 2026 source (the place's own website or menu, or local news), with the address checked. Founding years mean the year it opened at this address. The Aug 8, 2023 fire destroyed most of Lahaina, so a Lahaina place is listed only when a 2025 or 2026 source shows it open. Research records facts only, with a source for every place: no review text and no ratings from anyone. Places the research finds closed come off the lists. A guide gets its own page here once it has {MIN_LIST} places; until then it's in the app and the web search.</p>
+    <p>The Hawaii guides are hand-checked: each place was checked in {CHECKED} against a 2025 or 2026 source (the place's own website or menu, or local news), with the address checked. Founding years mean the year it opened at this address. The Aug 8, 2023 fire destroyed most of Lahaina, so a Lahaina place is listed only when a 2025 or 2026 source shows it open. Research records facts only, with a source for every place: no review text and no ratings from anyone. Places the research finds closed come off the lists. A guide gets its own page here once it has {MIN_LIST} places; until then it's in the web search.</p>
     <p>Honors are James Beard Foundation awards, nominees, semifinalists and America's Classics, checked by hand against the Foundation's announcements.</p>
     <p>The rest of the {N_REST:,} places come from Overture Maps' open place data. High-confidence map listings are kept; single listings are marked Listing only.{den_txt} Website links are checked, and any that no longer belong to the place are left out.</p>
-    <p>The Hawaii State Department of Health inspects every food business on every island and posts a green, yellow or red placard, but publishes results one search at a time, not in bulk, so {BRAND} has no inspection results and gives no grade of its own; each place links DOH's food safety page (<a href="/{INS_PATH}">how to look up a Hawaii restaurant inspection</a>). Ratings, reviews, hours and photos in the app are Apple Maps' own, shown live in Apple's place card; {BRAND} doesn't store or rank by them.</p>
+    <p>The Hawaii State Department of Health inspects every food business on every island and posts a green, yellow or red placard, but publishes results one search at a time, not in bulk, so {BRAND} has no inspection results and gives no grade of its own; each place links DOH's food safety page (<a href="/{INS_PATH}">how to look up a Hawaii restaurant inspection</a>). Ratings, reviews, hours and photos are Apple Maps' own, a link away in the web search; {BRAND} doesn't store or rank by them.</p>
     <h2>Updates</h2>
     <p>This build's restaurant data is from {hdate(D["generated"])}{f", from Overture Maps release {e(OVERTURE)}" if OVERTURE else ""}; the hand checks were done in {CHECKED}. The data is rebuilt when the research or the open data changes, and corrections go into the next update. Places open and close, so check before you go.</p>
     <h2>Sources and licenses</h2>
@@ -1959,7 +1904,7 @@ body = f"""{nav}
       {census_src}
       <li><b>Hawaii State Department of Health, Food Safety Branch</b>: what its placards mean (Hawaii Administrative Rules §11-50-9), and a link to its own page, not a copy of its results.</li>
       <li><b>Honors</b>: James Beard Foundation awards, nominees, semifinalists and America's Classics are reported as facts. James Beard Foundation and James Beard Award are trademarks of the James Beard Foundation. Other names belong to their owners.</li>
-      <li><b>Maps</b>: island outlines from the Hawaii Statewide GIS Program (above). In the app, maps, place cards and directions are by Apple Maps.</li>
+      <li><b>Maps</b>: island outlines from the Hawaii Statewide GIS Program (above). In the Eats Ranked app, maps, place cards and directions are by Apple Maps.</li>
     </ul>
     <h2>Foursquare notice</h2>
     <div class="notice">{e(FOURSQUARE_NOTICE)}</div>
@@ -1970,8 +1915,8 @@ body = f"""{nav}
 about_ld = {"@context": "https://schema.org", "@type": "AboutPage", "url": f"{DOMAIN}/about.html", "name": f"About {BRAND}",
             "mainEntity": {"@id": PERSON_ID}, "isPartOf": {"@id": SITE_ID}, "dateModified": TODAY}
 page("about.html", fit([f"About {BRAND}: Who Makes It and Where the Data Comes From", f"About {BRAND}: Sources, Methods and Who Makes It"], 50, 60, "about title"),
-     fit([f"{BRAND} is an independent app and website by {AUTHOR}. How the hand-checked plate lunch, poke and shave ice lists are built, plus sources and licenses.",
-          f"{BRAND} is an independent app and website by {AUTHOR}: how the hand-checked lists are built, where the data comes from, and its licenses."], 140, 160, "about description"),
+     fit([f"{BRAND} is an independent restaurant guide by {AUTHOR}. How the hand-checked plate lunch, poke and shave ice lists are built, plus sources and licenses.",
+          f"{BRAND} is an independent restaurant guide by {AUTHOR}: how the hand-checked lists are built, where the data comes from, and its licenses."], 140, 160, "about description"),
      body, [about_ld, bc])
 
 # ---------------------------------------------------------------- privacy and terms
@@ -1980,20 +1925,9 @@ body = f"""{nav}
   <main id="main" class="legal">
   <section class="hero">
     <h1>Privacy policy</h1>
-    <p class="lede">Short version: the {BRAND} app collects nothing about you, and this website doesn't track you. Last updated {hdate(PRIVACY_UPDATED)}.</p>
+    <p class="lede">Short version: this website doesn't track you. No account, no analytics, no ads, no cookies. Last updated {hdate(PRIVACY_UPDATED)}.</p>
   </section>
   <section>
-    <h2>The app</h2>
-    <ul>
-      <li><b>No account, no analytics, no ads.</b> The app has no sign-in, no advertising and no analytics or crash-reporting code. We receive no data from it.</li>
-      <li><b>Location.</b> If you allow it, your location is used on your device to sort places by distance and show where you are on the map. It is never sent to us. You can turn it off in Settings at any time.</li>
-      <li><b>Saved places and filters</b> are stored only on your device and are deleted when you delete the app.</li>
-      <li><b>Apple Maps.</b> When you open a place's ratings, hours and photos, or ask for directions, the app asks Apple Maps for that place. Apple handles that request under <a href="https://www.apple.com/legal/privacy/" rel="noopener">Apple's privacy policy</a>, as it does for any app that shows a map.</li>
-      <li><b>Data updates.</b> When you open the app, it checks this website for newer restaurant data, at most once a day (or an hour later if a check didn't go through), and downloads it when there is some. These requests carry no location or identifiers. GitHub, which hosts this site, may keep standard server logs of them, as it does for any visit here.</li>
-      <li><b>Spotlight.</b> The app adds its hand-checked and honored places to your device's search index so you can find them from Spotlight. That index stays on your device.</li>
-      <li><b>Calls, websites, email and inspection lookups</b> you start from a place open in the Phone app, your browser or Mail, and are handled by them and by the site you open.</li>
-    </ul>
-    <p>When the app is on the App Store, its privacy label will be "Data Not Collected".</p>
     <h2>This website</h2>
     <p>The site is static pages hosted on GitHub Pages. It sets no cookies and loads no analytics, fonts or scripts from anyone else. GitHub may keep standard server logs, such as IP addresses, for security; see <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement" rel="noopener">GitHub's privacy statement</a>.</p>
     <ul>
@@ -2001,16 +1935,18 @@ body = f"""{nav}
       <li><b>Location.</b> If you tap Near me or choose the Nearest sort, your browser asks whether to share your location. If you allow it, the location is used only inside your browser to sort places by distance and is never sent to us or anyone else.</li>
       <li><b>Links out.</b> Apple Maps, directions, websites, phone numbers and the Department of Health's page open in Apple Maps, the other site or your phone, under their own privacy policies.</li>
     </ul>
+    <h2>The Eats Ranked app</h2>
+    <p>On iPhone and iPad, the Hawaii guide is part of the Eats Ranked app, {APP_WHEN}. Eats Ranked has its own privacy policy at <a href="{APP_PRIVACY_URL}" rel="noopener">eatsranked.com/privacy.html</a>. In short, it collects nothing about you. When it downloads or refreshes the Hawaii guide it fetches data files from this website, in requests that carry no location and no identifier; GitHub may log them as it does any visit here.</p>
     <h2>Email</h2>
     <p>If you email us, we use your message and address only to reply and to fix the listing you told us about. We don't add you to a mailing list or share your address.</p>
     <h2>Children</h2>
-    <p>The app collects no personal information from anyone, including children.</p>
+    <p>This website collects no personal information from anyone, including children.</p>
     <h2>Changes and contact</h2>
     <p>If this policy changes, the new version will be posted here with a new date. Questions: <a href="mailto:{EMAIL}">{EMAIL}</a>.</p>
   </section>
   </main>"""
-page("privacy.html", fit([f"Privacy Policy: {BRAND}, a Hawaii Restaurant Guide", f"Privacy Policy: {BRAND} Restaurant Guide App", f"Privacy Policy: {BRAND}, the Hawaii Restaurant Guide App"], 50, 60, "privacy title"),
-     fit([f"The {BRAND} privacy policy: the app collects no data, keeps your location and saved places on your device, and this website sets no cookies at all."], 140, 160, "privacy"),
+page("privacy.html", fit([f"Privacy Policy: {BRAND}, a Hawaii Restaurant Guide", f"Privacy Policy: {BRAND}, the Hawaii Restaurant Guide", f"Privacy Policy for {BRAND}, a Hawaii Restaurant Guide"], 50, 60, "privacy title"),
+     fit([f"The {BRAND} privacy policy: this website collects no data, keeps your location and saved places in your browser, and sets no cookies at all."], 140, 160, "privacy"),
      body, [bc])
 
 nav, bc = crumbs([("Home", "/"), ("Terms of use", "/terms.html")])
@@ -2019,17 +1955,17 @@ body = f"""{nav}
   <main id="main" class="legal">
   <section class="hero">
     <h1>Terms of use</h1>
-    <p class="lede">The plain-language terms for the {BRAND} app and this website. Last updated {hdate(POLICY_UPDATED)}.</p>
+    <p class="lede">The plain-language terms for {BRAND}, this website. Last updated {hdate(POLICY_UPDATED)}.</p>
   </section>
   <section>
-    <h2>What the app is</h2>
+    <h2>What {BRAND} is</h2>
     <p>{BRAND} is a free guide to restaurants in Hawaii, made by {AUTHOR}. It is provided as is, for personal use, without charge and without warranties of any kind.</p>
     <h2>Check before you go</h2>
     <p>Restaurants open, close, change their hours and change their menus, and many small counters close when the food runs out. Dishes, seasons and founding years are what each place or a named source said when we checked in {CHECKED}. We work to keep the lists right, but we can't promise that any listing is current or complete. Call the restaurant before you make the trip.</p>
     <h2>Health inspections</h2>
     <p>{BRAND} shows no inspection results and gives no grade. The Hawaii State Department of Health inspects restaurants and posts placards but publishes no results in bulk. Links to DOH go to its own site, which is responsible for what it shows; see <a href="/{INS_PATH}">how to look up a Hawaii restaurant inspection</a>.</p>
     <h2>Other people's content</h2>
-    <p>Ratings, reviews, hours and photos in each place card come from Apple Maps and are Apple's and its providers', under Apple's terms. Restaurant names and trademarks belong to their owners. James Beard Foundation and James Beard Award are trademarks of the James Beard Foundation. {BRAND} is not affiliated with any restaurant, team, chain, award body or government agency.</p>
+    <p>The web search and each place's page link to Apple Maps; the ratings, reviews, hours and photos there are Apple's and its providers', under Apple's terms. Restaurant names and trademarks belong to their owners. James Beard Foundation and James Beard Award are trademarks of the James Beard Foundation. {BRAND} is not affiliated with any restaurant, team, chain, award body or government agency.</p>
     <h2>Data sources and licenses</h2>
     <ul>
       <li>Overture Maps Foundation places data: data from Meta, Microsoft, DAC and BrightQuery under the <a href="/licenses/CDLA-Permissive-2.0.txt">Community Data License Agreement, Permissive 2.0</a>; data from Foursquare (© Foursquare Labs, Inc.) under the <a href="/licenses/Apache-2.0.txt">Apache License 2.0</a>, with its <a href="/licenses/Foursquare-NOTICE.txt">notice</a>; data from AllThePlaces under CC0 1.0. Island coastlines, 2020 Census places and town spellings from the Hawaii Statewide GIS Program and the U.S. Geological Survey (public domain).</li>
@@ -2041,12 +1977,12 @@ body = f"""{nav}
     <h2>Corrections</h2>
     <p>If a listing is wrong, or you own a restaurant and want something fixed, email <a href="mailto:{EMAIL}">{EMAIL}</a>. We fix mistakes in the next update.</p>
     <h2>Liability</h2>
-    <p>To the extent the law allows, we are not liable for any loss arising from use of the app or site, including a wasted drive to a closed restaurant.</p>
+    <p>To the extent the law allows, we are not liable for any loss arising from use of this site, including a wasted drive to a closed restaurant.</p>
     <h2>Changes</h2>
     <p>We may update these terms; the current version and its date are always on this page. See also the <a href="/privacy.html">privacy policy</a>.</p>
   </section>
   </main>"""
-page("terms.html", fit([f"Terms of Use: {BRAND}, the Hawaii Restaurant Guide App", f"Terms of Use: {BRAND}, a Hawaii Restaurant Guide", f"Terms of Use: {BRAND} Restaurant Guide App"], 50, 60, "terms title"),
+page("terms.html", fit([f"Terms of Use: {BRAND}, the Hawaii Restaurant Guide", f"Terms of Use: {BRAND}, a Hawaii Restaurant Guide", f"Terms of Use for {BRAND}, the Hawaii Restaurant Guide"], 50, 60, "terms title"),
      fit([f"The {BRAND} terms of use: a free Hawaii restaurant guide, provided as is. Check before you go, and see where each listing comes from and what it means."], 140, 160, "terms"),
      body, [bc])
 
